@@ -17,7 +17,23 @@ const createSubject = async(req,res) => {
     }
 }
 
-const getAllSubjects = async(req,res) => {
+const getAllSubjectsByDept = async(req,res) => {
     // all subjects of particular department
+    try {   
+       const departmentId = req.params.id;
+       const subjects = await subjectService.getSubjectsByDepartment(departmentId);
+       if(subjects.error) {
+        return res.status(subjects.error.code).json(subjects.error.message);
+       }
+       return res.json(subjects);
+    } catch(err) {
+        console.log(err);
+        return res.status(500).send({"message":"something went wrong in subjectController create subject"});
     
+    }
+}
+
+module.exports = {
+    createSubject,
+    getAllSubjectsByDept
 }

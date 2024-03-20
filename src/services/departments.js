@@ -11,6 +11,22 @@ const getDepartment = async(departmentName) => {
     }
 }
 
+const getAllDepartments = async(facultyId) => {
+  try {
+    let departments;
+     if(facultyId) {
+       departments = await Department.findAll({where:{FacultyId:facultyId}});
+     }
+     else {
+      departments = await Department.findAll();
+     }
+    return {departments:departments};
+  } catch(err) {
+      console.log(err);
+      return {error:{message:"something went wrong in getAllDepartments",code:500}}
+  }
+}
+
 
 const createDepartment = async(dept) => {
     try {
@@ -45,6 +61,7 @@ const updateDepartment = async(updates) => {
 
 module.exports = {
   getDepartment,
+  getAllDepartments,
   createDepartment,
   deleteDepartment,
   updateDepartment

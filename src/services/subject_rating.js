@@ -43,7 +43,7 @@ const updateSubject_Rating = async (updatedSubjectRating) => {
     
 const getAllSubjectRatingsOfTeacher = async(teacherId) => {
     try {
-       const teacher_ratings = await Subject_Rating.findAll({where:{TeacherId:teacherId}});
+       const teacher_ratings = await Subject_Rating.findAll({where:{TeacherEmail:teacherId}});
        return {teacher_ratings:teacher_ratings};
     }  catch (err) {
         console.log(err);
@@ -61,7 +61,22 @@ const getAllSubjectRatingsOfSubject = async(subjectId) => {
      }
 }
 
+const getTopSubjectRatings  = async() => { //get top 10 subject ratings
+      try {
+        const topSubjectRatings = await Subject_Rating.findAll({
+            order: [['rating', 'DESC']],
+            limit: 10,
+          });
+          return {top_subject_ratings: topSubjectRatings};
 
+      } catch(err) {
+        console.log(err);
+        return { error: { message: "something went wrong in getTopSubject_Rating", code: 500 } };
+   
+      }
+}
+
+  
 
 module.exports = {
     getSubject_Rating,
@@ -69,5 +84,6 @@ module.exports = {
     deleteSubject_Rating,
     updateSubject_Rating,
     getAllSubjectRatingsOfSubject,
-    getAllSubjectRatingsOfTeacher
+    getAllSubjectRatingsOfTeacher,
+    getTopSubjectRatings
 }

@@ -48,7 +48,21 @@ const getAllRatingsOfTeacher = async(subjectRatingId) => {
     } catch(err) {
         console.log(err);
         return { error: { message: "something went wrong in updateRating", code: 500 } };
-    
+
+    }
+}
+
+const roleModelCount = async(teacherEmail) => {
+    try {
+        return await Rating.count({
+            where: {
+              TeacherEmail: teacherEmail,
+              is_role_model: true
+            }
+          });
+    } catch(err) {
+        console.log(err);
+        return { error: { message: "something went wrong in updateRating", code: 500 } };
     }
 }
 
@@ -57,5 +71,6 @@ module.exports = {
     createRating,
     deleteRating,
     updateRating,
-    getAllRatingsOfTeacher
+    getAllRatingsOfTeacher,
+    roleModelCount
 }

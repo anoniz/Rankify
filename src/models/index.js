@@ -31,8 +31,24 @@ Subject.belongsTo(Department);
 
 
 // User and Dept relation
-Department.hasMany(User); // need to fix this later , give it fk
+Department.hasMany(User, {
+    onDelete: 'CASCADE',
+    foreignKey: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+}); // need to fix this later , give it fk
 User.belongsTo(Department);
+
+
+Teacher.hasMany(Rating, {
+    onDelete: 'CASCADE',
+    foreignKey: {
+        type: DataTypes.STRING,
+        allowNull: false
+    }
+}); // Each teacher can receive multiple ratings
+Rating.belongsTo(Teacher); // Each rating is associated with a teacher
 
 
 Teacher.hasMany(Subject_Rating, {

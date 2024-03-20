@@ -43,10 +43,22 @@ const updateSubject = async(updates) => {
 
 }
 
+const getSubjectsByDepartment = async(departmentId) => {
+   try {
+       const subjects = await Subject.findAll({where:{ DepartmentId:departmentId}});
+       return {subjects}
+   } catch(err) {
+    console.log(err);
+    return {error:{message:"something went wrong in getSubjectByDept",code:500}};
+  
+   }
+}
+
 module.exports = {
   getSubject,
   createSubject,
   deleteSubject,
-  updateSubject
+  updateSubject,
+  getSubjectsByDepartment
 }
 

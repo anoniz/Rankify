@@ -36,17 +36,17 @@ const { ratingService, subjectRatingService, reviewService } = require('../servi
 const createRating = async(req,res) => {
     // req.body should have rating, user,teacher,subject
     try {
-
+      console.log(req.body);
     const rating = {
         ...req.body.rating,   // this will contain above things
-        UserId: req.user.id,  // req object will contain user after validation,
-        TeacherId: req.body.teacher.id
+        UserEmail: req.body.user.email,  // req object will contain user after validation,
+        TeacherEmail: req.body.teacher.email
     } // we also need SubjectRatingId to create review so lets create one.
 
     // create a subjectRating
     let subject_Rating = {
         id:uuid(),
-        TeacherId: req.body.teacher.id,
+        TeacherEmail: req.body.teacher.email,
         SubjectId: req.body.subject.id,
         rating: calculateSubjectRating(rating) 
     };
@@ -55,7 +55,8 @@ const createRating = async(req,res) => {
         return res.status(subjectRating.error.code).send(subjectRating.error.message);
     }
     // now subject rating is created so we can create the rating;
-    rating.Subject_RatingId = subjectRating.subjectRating.id;
+    rating.SubjectRatingId = subjectRating.subjectRating.id;
+    rating.id = uuid();
     const newRating = await ratingService.createRating(rating);
     if(newRating.error) {
         return res.status(newRating.error.code).send(newRating.error.message);

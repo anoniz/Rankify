@@ -11,7 +11,15 @@ const getFaculty = async(facultyName) => {
       }
 }
 
-
+const getAllFaculties = async() => {
+  try {
+    const faculties = await Faculty.findAll();
+    return {faculties:faculties}
+  } catch(err) {
+      console.log(err);
+      return {error:{message:"something went wrong in getAllFaculties",code:500}}
+  }
+}
 
 const createFaculty = async(faculty) => {
     try {
@@ -46,6 +54,7 @@ const updateFaculty = async(updates) => {
 
 module.exports = {
   getFaculty,
+  getAllFaculties,
   createFaculty,
   deleteFaculty,
   updateFaculty

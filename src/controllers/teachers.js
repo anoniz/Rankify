@@ -1,37 +1,11 @@
-const { teacherService,departmentService,facultyService } = require('../services/index');
+const { teacherService,subjectRatingService,ratingService } = require('../services/index');
 const { v4:uuid } = require('uuid');
-
+const { Teacher, Subject} = require('../models/index');
 // CRUD
-// 1. CREATE
 
-// Array []
-// ​
-// 0: Object { profileUrl: "https://abc.com/amir", name: "muhammad amir", email: "amir@iiu.edu.pk", … }
-// ​​
-// department: "Department of Computer Science"
-// ​​
-// designation: "Professor"
-// ​​
-// email: "amir@iiu.edu.pk"
-// ​​
-// faculty: "Faculty of Computing and Information Technology"
-// ​​
-// name: "muhammad amir"
-// ​​
-// profileUrl: "https://abc.com/amir"
-// ​​
-// qualification: "PhD"
-// ​​
-// specialization: "Image proccessing"
-// ​​
-// <prototype>: Object { … }
-// ​
-// length: 1
-// ​
-// <prototype>: Array []
 
 const createTeacher = async(req,res) => {
-    try {   // req.body will have teacher obj and anything else
+    try {   // req.body will have teacher obj, faculty obj and dept obj and anything else
         const teacher = {...req.body.teacher};
          console.log(req.body)
          // validate email
@@ -39,7 +13,6 @@ const createTeacher = async(req,res) => {
          if(!emailRegex.test(teacher.email)) {
              return res.status(400).send({"message":"Invalid IIUI Email from server"});
          }
-         console.log(req.body)
          const fetchTeacher = await teacherService.getTeacher(teacher.email);
          if(fetchTeacher.error) { 
               return res.status(fetchTeacher.error.code).send(fetchTeacher.error.message);
@@ -47,35 +20,9 @@ const createTeacher = async(req,res) => {
          if(fetchTeacher.teacher) {
           return res.status(409).send({"message":"Teacher already exists with this email"});
          }
-         // now teacher is not in db so we can create it.
-         // check if given faculty and department exists
-         // else create them on the fly
-         let fetchFaculty = await facultyService.getFaculty(teacher.faculty);
-         if(!fetchFaculty.faculty) {
-         
-            fetchFaculty = {id:uuid(),name:teacher.faculty};
-            console.log(fetchFaculty, "..pp");
-            fetchFaculty = await facultyService.createFaculty(fetchFaculty);
-         }
-         // now faculty is created, now create the department
-         let fetchDepartment = await departmentService.getDepartment(teacher.department);
-         if(!fetchDepartment.department) {
-           fetchDepartment = {id:uuid(),name:teacher.department,FacultyId: fetchFaculty.faculty.id};
-         
-           fetchDepartment = await departmentService.createDepartment(fetchDepartment);
-         }
-         // if i am here then dept exists or its created.
-         // so we can proceed to create the teacher
-         // modifying teacher object and adding IDs
-         delete teacher.faculty;
-         delete teacher.department;
-         //
-          console.log(fetchFaculty.faculty);
-          console.log(fetchDepartment.department);
-         //
     
-          teacher.FacultyId = fetchFaculty.faculty.id;
-          teacher.DepartmentId = fetchDepartment.department.id;
+          teacher.FacultyId = req.body.faculty.id;
+          teacher.DepartmentId = req.body.department.id;
          
          const newTeacher = await teacherService.createTeacher(teacher);
          if(newTeacher.error) {
@@ -109,11 +56,61 @@ const getTeacherById = async(req,res) => {
 
 const getAllTeachers = async(req,res) => {
     try {
-      const teachers = await teacherService.getAllTeachers();
-      return res.status(200).send({"teachers":teachers,"message":"foun all"});
+      const facultyId = req.params.facultyId;
+      const teachers = await teacherService.getAllTeachers(facultyId);
+      return res.status(200).send({"teachers":teachers,"message":"found all"});
     } catch(err) {
         console.log(err);
-        return res.status(500).send({"message":"something went wrong in teacherController findAll"});
+        return res.status(500).send({"message":"something went wrong in teacherController findByFaculty"});
+    }
+}
+const getAllTeachersByDept = async(req,res) => {
+    try {
+      const departmentId = req.params.departmentId;
+      const teachers = await teacherService.getAllTeachersByDept(departmentId);
+      return res.status(200).send({"teachers":teachers,"message":"found all"});
+    } catch(err) {
+        console.log(err);
+        return res.status(500).send({"message":"something went wrong in teacherController findBYDept"});
+    }
+}
+
+const getTop10Teachers = async(req,res) => {
+    try {
+       const {top_subject_ratings} = await subjectRatingService.getTopSubjectRatings(); // get top 10
+       const teacherEmails = top_subject_ratings.map(rating => rating.TeacherEmail);
+       // fetch all teachers
+       const top_10_teachers = await Teacher.findAll({
+           where: {
+              email: teacherEmails
+        }
+      });
+       // fetch all subjects
+       const subjectIds = top_subject_ratings.map(rating => rating.SubjectId);
+       const subjects = await Subject.findAll({
+           where: {
+             id: subjectIds
+           }
+       });
+       // check if a teacher is role model..
+       for(const teacher of top_10_teachers) {
+           const roleModelCount = await ratingService.roleModelCount(teacher.email);
+           if(!roleModelCount.error) { // if no errors
+             teacher.dataValues.roleModelCount = roleModelCount; // adding role model count on teacher object
+           }
+           
+       }
+       const topTeachers = [];
+       topTeachers.push({teachers: top_10_teachers});
+       topTeachers.push({subjects: subjects});
+       console.log(topTeachers[0].teachers);
+       // return top teachers
+       return res.json(topTeachers);
+        
+    } catch(err) {
+            console.log(err);
+            return res.status(500).send({"message":"something went wrong in teacherController top10"});
+        
     }
 }
 
@@ -121,4 +118,6 @@ module.exports = {
     createTeacher,
     getTeacherById,
     getAllTeachers,
+    getAllTeachersByDept,
+    getTop10Teachers
 }

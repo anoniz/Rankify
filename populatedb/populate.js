@@ -39,42 +39,19 @@ async function populateDatabase(jsonFilePath,commonSubjectsFilePath) {
     }
 }
 
-    // Usage example: node populateDatabase.js data.json
-    const jsonFilePath = process.argv[2];
-    const commonSubjects = process.argv[3];
-    populateDatabase(jsonFilePath,commonSubjects);
+    // // Usage example: node populateDatabase.js data.json
+    // const jsonFilePath = process.argv[2];
+    // const commonSubjects = process.argv[3];
+    // populateDatabase(jsonFilePath,commonSubjects);
 
+// populate teachers
+const { Teacher } = require('../src/models/index');
+const jsonFilePath = process.argv[2];
+async function populateTeachers(jsonFilePath) {
+    const jsonData = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'));
 
-// find faculties and dept
-
-const findFaculty = async(facultyName) =>  {
-    try {
-        return await Faculty.findOne({where:{
-            name: facultyName
-        }});
-    } catch(err) {
-        console.log(err);
+    for(const teacher of jsonData.teachers) {
+        teacher.FacultyId = "6b10b0aa-b099-4507-8299-79f41e85ba31";
+        await Teacher.create(teacher);
     }
-}
-
-const findDept = async(deptName) => {
-    try {
-        return await Department.findOne({where:{
-            name: deptName
-        }})
-    } catch(err) {
-        console.log(err);
-    }
-}
-
-const findSubject = async(subjectName) => {
-    try {
-        return await Subject.findOne({where:{
-            name:subjectName 
-        }});
-    } catch(err) {
-        console.log(err);
-    }
-}
-
-
+}  

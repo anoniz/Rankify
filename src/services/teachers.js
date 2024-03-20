@@ -1,6 +1,6 @@
 // CRUD
 
-const { Teacher } = require('../models/index');
+const { Teacher, } = require('../models/index');
 
 const getTeacher = async (email) => {
      try {
@@ -40,27 +40,54 @@ const createTeacher = async(teacher) => {
      return {updatedTeacher: newTeacher[1]}; 
    } catch(err) {
      console.log(err);
-     return {error:{message:"something went wrong in deleteTeacher",code:500}};
+     return {error:{message:"something went wrong in updateTeacher",code:500}};
    }
  
  }
 
-const getAllTeachers = async() => {
+const getAllTeachers = async(facultyId) => { // if facultyId is provided then fetch by faculty else fetch all
   try {
-    const teachers = await Teacher.findAll();
+    let teachers;
+    if(facultyId) {
+      teachers = await Teacher.findAll({where:{FacultyId:facultyId}});
+    }
+    else {
+      teachers = await Teacher.findAll();
+    }
+    
     return {teachers:teachers};
   } catch(err) {
     console.log(err);
-    return {error:{message:"something went wrong in deleteTeacher",code:500}};
+    return {error:{message:"something went wrong in getAllTeacher",code:500}};
   }
 
 } 
- 
- module.exports = {
+
+const getAllTeachersByDept = async(departmentId) => { // if facultyId is provided then fetch by faculty else fetch all
+  try {
+    let teachers;
+    if(departmentId) {
+      teachers = await Teacher.findAll({where:{DepartmentId:departmentId}});
+    }
+    else {
+      teachers = await Teacher.findAll();
+    }
+    
+    return {teachers:teachers};
+  } catch(err) {
+    console.log(err);
+    return {error:{message:"something went wrong in getAllTeacher",code:500}};
+  }
+
+} 
+
+
+module.exports = {
    getTeacher,
    createTeacher,
    deleteTeacher,
    updateTeacher,
-   getAllTeachers
+   getAllTeachers,
+   getAllTeachersByDept
  }
 

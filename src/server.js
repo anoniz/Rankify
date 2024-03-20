@@ -3,7 +3,7 @@ const cors = require('cors');
 const sequelize = require('./db/sequelize');
 const app = express();
 const port = process.env.PORT || 3000
-const { teacherRouter, userRouter, ratingRouter } = require('./routes/index');
+const { teacherRouter, userRouter, ratingRouter, facultyRouter, departmentRouter, subjectRouter } = require('./routes/index');
 app.use(cors());
 app.use(express.json());
 
@@ -15,7 +15,9 @@ app.get('/',(req,res) => {
 app.use('/',teacherRouter);
 app.use('/',userRouter);
 app.use('/',ratingRouter);
-
+app.use('/',facultyRouter);
+app.use('/',departmentRouter);
+app.use('/',subjectRouter)
 
 // sequelize.sync({force:true})
 
