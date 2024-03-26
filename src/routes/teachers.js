@@ -7,6 +7,7 @@ router.get('/api/teacher/:id',teacherController.getTeacherById); // get by id/em
 router.get('/api/teachers/faculty/:facultyId?',teacherController.getAllTeachers); // get teacher by faculty (if provided)
 router.get('/api/teachers/department/:departmentId?',teacherController.getAllTeachersByDept) // get teacher by dept
 router.get('/api/teachers/top10',teacherController.getTop10Teachers);
+router.get('/api/teachers/:name',teacherController.getBestTeacherOfSubject);
 
 
 

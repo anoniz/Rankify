@@ -84,13 +84,14 @@ const getAllRatingsOfTeacher = async(req,res) => {
         }
 
         // now we can get all ratings of these subject ratings
-        const allRatings = await Promise.all((subject_ratings.teacher_ratings).
-        map(async(subject_rating ) => {
-           const ratings = await ratingService.getAllRatingsOfTeacher(subject_rating.id);
-           return {subject_rating, allRatings:ratings};
-        }));
-        
-        return res.send({"allRatings":allRatings});
+
+        for(let subject_rating of subject_ratings.teacher_ratings) {
+            const allRatings = await ratingService.getAllRatingsOfTeacher(subject_rating.id);
+            if(allRatings.ratings) {
+               subject_rating.dataValues.allRatings = allRatings.ratings;
+            }
+        }
+        return res.json({subject_ratings});
 
     } catch(err) {
         console.log(err);

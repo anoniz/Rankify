@@ -42,7 +42,7 @@ const updateRating = async (updatedRating) => {
 
 const getAllRatingsOfTeacher = async(subjectRatingId) => {
     try {
-       const ratings = Rating.findAll({where:{Subject_RatingId: subjectRatingId}});
+       const ratings = await Rating.findAll({where:{SubjectRatingId: subjectRatingId}});
        return {ratings:ratings};
 
     } catch(err) {

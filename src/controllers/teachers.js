@@ -1,6 +1,8 @@
 const { teacherService,subjectRatingService,ratingService } = require('../services/index');
 const { v4:uuid } = require('uuid');
-const { Teacher, Subject} = require('../models/index');
+const { Teacher, Subject, Subject_Rating,Department,Faculty} = require('../models/index');
+const sequelize = require('sequelize');
+const { json } = require('express');
 // CRUD
 
 
@@ -77,13 +79,30 @@ const getAllTeachersByDept = async(req,res) => {
 
 const getTop10Teachers = async(req,res) => {
     try {
-       const {top_subject_ratings} = await subjectRatingService.getTopSubjectRatings(); // get top 10
+       
+       const limit = parseInt(req.query.limit || 50);
+       console.log(limit);
+       console.log(req.query.limit);
+
+       const {top_subject_ratings} = await subjectRatingService.getTopSubjectRatings(limit); // get top 10
        const teacherEmails = top_subject_ratings.map(rating => rating.TeacherEmail);
        // fetch all teachers
        const top_10_teachers = await Teacher.findAll({
            where: {
               email: teacherEmails
-        }
+        },
+        include: [
+          {
+            model: Department,
+            attributes: ['name'],
+            include: [
+              {
+                model: Faculty,
+                attributes: ['name']
+              }
+            ]
+          }
+        ]
       });
        // fetch all subjects
        const subjectIds = top_subject_ratings.map(rating => rating.SubjectId);
@@ -98,12 +117,15 @@ const getTop10Teachers = async(req,res) => {
            if(!roleModelCount.error) { // if no errors
              teacher.dataValues.roleModelCount = roleModelCount; // adding role model count on teacher object
            }
-           
+           // also set department and faculty names
+           teacher.dataValues.faculty = teacher.dataValues.Department.Faculty.name;
+           teacher.dataValues.department = teacher.dataValues.Department.name;
+           delete teacher.dataValues.Department;
        }
        const topTeachers = [];
        topTeachers.push({teachers: top_10_teachers});
        topTeachers.push({subjects: subjects});
-       console.log(topTeachers[0].teachers);
+       console.log(JSON.parse(JSON.stringify(topTeachers[0].teachers)));
        // return top teachers
        return res.json(topTeachers);
         
@@ -114,10 +136,53 @@ const getTop10Teachers = async(req,res) => {
     }
 }
 
+// get best teacher of a subject based on ratings of that subject
+const getBestTeacherOfSubject = async (req,res) => {
+     try { 
+      console.log(req.params.name);
+      const subjectName = req.params.name; // by name
+      const subject_ratings = await subjectRatingService.getSubjectRatingsByName(subjectName);
+      if(subject_ratings.error) {
+         return res.status(subject_ratings.error.code).json(subject_ratings.error.message);
+      }
+        // get top  5 best teachers of that subject
+        const topTeachers = await getTopTeachers(subject_ratings.subjectRatings);
+     } catch(err) {
+       console.log(err);
+       return res.status(500).send({"message":"something went wrong in teacherController getBestTeacher"});
+     }
+}
+
+
+async function getTopTeachers(subjectRatings) {
+  try {
+      const topTeachers = await Subject_Rating.findAll({
+          attributes: [
+              'TeacherEmail',
+              [sequelize.fn('COUNT', sequelize.col('rating')), 'ratingCount']
+          ],
+          where: {
+              TeacherEmail: {
+                  [sequelize.Op.in]: subjectRatings.map(rating => rating.TeacherEmail)
+              }
+          },
+          group: ['teacherEmail'],
+          order: sequelize.literal('ratingCount DESC'),
+          limit: 5
+      });
+      return topTeachers;
+  } catch (error) {
+      console.error('Error fetching top teachers:', error);
+      return null;
+  }
+}
+
+
 module.exports = {
     createTeacher,
     getTeacherById,
     getAllTeachers,
     getAllTeachersByDept,
-    getTop10Teachers
+    getTop10Teachers,
+    getBestTeacherOfSubject
 }

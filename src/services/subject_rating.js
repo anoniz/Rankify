@@ -1,4 +1,4 @@
-const { Subject_Rating } = require('../models/index');
+const { Subject_Rating,Subject } = require('../models/index');
 
 const getSubject_Rating = async (subjectRatingId) => {
     try {
@@ -61,11 +61,11 @@ const getAllSubjectRatingsOfSubject = async(subjectId) => {
      }
 }
 
-const getTopSubjectRatings  = async() => { //get top 10 subject ratings
+const getTopSubjectRatings  = async(limit) => { //get top 10 subject ratings
       try {
         const topSubjectRatings = await Subject_Rating.findAll({
             order: [['rating', 'DESC']],
-            limit: 10,
+            limit: limit,
           });
           return {top_subject_ratings: topSubjectRatings};
 
@@ -76,6 +76,21 @@ const getTopSubjectRatings  = async() => { //get top 10 subject ratings
       }
 }
 
+const getSubjectRatingsByName = async(subjectName) => {
+    try {
+        const subjectRatings = await Subject_Rating.findAll({
+            include: {
+                model: Subject,
+                where: { name: subjectName }
+            }
+        });
+        return {subjectRatings}
+    }  catch(err) {
+        console.log(err);
+        return { error: { message: "something went wrong in getSubjectRatinsByName", code: 500 } };
+   
+      }
+}
   
 
 module.exports = {
@@ -85,5 +100,6 @@ module.exports = {
     updateSubject_Rating,
     getAllSubjectRatingsOfSubject,
     getAllSubjectRatingsOfTeacher,
-    getTopSubjectRatings
+    getTopSubjectRatings,
+    getSubjectRatingsByName
 }

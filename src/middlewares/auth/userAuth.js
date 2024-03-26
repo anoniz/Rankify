@@ -39,7 +39,7 @@ const authenticateJWT = async(req, res, next) => {
         }
         // Token verification succeeded, user information is extracted from the token
         // lets get all user details from dbm we will need them
-        user = await User.findByPk(user.id);
+        user = await User.findByPk(user.email);
         if(!user) {
             return res.status(403).json({ error: 'Token verification failed' });
         }
@@ -49,7 +49,7 @@ const authenticateJWT = async(req, res, next) => {
       });
     } else {
       // If no token provided in the Authorization header
-      res.status(401).json({ error: 'Unauthorized - No token provided' });
+      return res.status(401).json({ error: 'Unauthorized - No token provided' });
     }
   }
 };

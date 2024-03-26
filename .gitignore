@@ -5,3 +5,6 @@ test.js
 populatedb
 populatedb/common_subjects.json
 test
+populatedb/data.json
+progress.txt
+

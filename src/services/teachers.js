@@ -1,6 +1,6 @@
 // CRUD
 
-const { Teacher, } = require('../models/index');
+const { Teacher, Subject_Rating,Department,Faculty} = require('../models/index');
 
 const getTeacher = async (email) => {
      try {
@@ -81,6 +81,54 @@ const getAllTeachersByDept = async(departmentId) => { // if facultyId is provide
 
 } 
 
+const getTeachersWithRankingOfDepartment = async (departmentId) => {
+  try {
+    // let's fisrt get all teachers of given dept
+     const teachers = await Teacher.findAll({where:{DepartmentId:departmentId}});
+     const teacherEmails = teachers.map(teacher => teacher.dataValues.email);
+
+     // Find the best subject rating for each teacher
+  //    const bestRatings = await Subject_Rating.findAll({
+  //     attributes: [
+  //         'TeacherEmail',
+  //         [sequelize.fn('MAX', sequelize.col('rating')), 'maxRating']
+  //     ],
+  //     where: { TeacherEmail: teacherEmails }, // Filter by the specified teacher emails
+  //     group: ['TeacherEmail']
+  // });
+
+  // Find all teachers of the specified department with their best subject ratings,
+  // including department and faculty names
+  const teachersWithBestRating = await Teacher.findAll({
+      where: { DepartmentId: departmentId },
+      include: [
+          {
+              model: Subject_Rating,
+              attributes: [],
+              where: sequelize.literal('`Teacher`.`TeacherEmail` = `SubjectRating`.`TeacherEmail` AND `SubjectRating`.`rating` = `maxRating`'),
+              required: false
+          },
+          {
+              model: Department,
+              attributes: ['name'],
+              include: [
+                  {
+                      model: Faculty,
+                      attributes: ['name']
+                  }
+              ]
+          }
+      ]
+  });
+
+  return teachersWithBestRating;
+
+  } catch(err) {
+    console.log(err);
+    return {error:{message:"something went wrong in getTeachersWithRankingOfDepartment",code:500}};
+  
+  }
+}
 
 module.exports = {
    getTeacher,
@@ -88,6 +136,7 @@ module.exports = {
    deleteTeacher,
    updateTeacher,
    getAllTeachers,
-   getAllTeachersByDept
+   getAllTeachersByDept,
+   getTeachersWithRankingOfDepartment
  }
 

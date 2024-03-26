@@ -4,6 +4,7 @@ const ratingRouter = require('./ratings');
 const facultyRouter = require('./faculty');
 const departmentRouter = require('./department');
 const subjectRouter = require('./subjects');
+const reviewRouter = require('./reviews');
 
 module.exports = {
     teacherRouter,
@@ -11,5 +12,6 @@ module.exports = {
     ratingRouter,
     facultyRouter,
     departmentRouter,
-    subjectRouter
+    subjectRouter,
+    reviewRouter
 }

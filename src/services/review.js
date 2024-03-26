@@ -40,9 +40,20 @@ const updateReview = async (updatedReview) => {
     }
 }
 
+const getAllReviewsbyTeacher = async(teacherEmail) => {
+    try {
+         const reviews = await Review.findAll({where:{TeacherEmail:teacherEmail}});
+         return {reviews};
+    } catch (err) {
+        console.log(err);
+        return { error: { message: "something went wrong in getAllReviewbyteacher", code: 500 } };
+    }
+}
+
 module.exports = {
     getReview,
     createReview,
     deleteReview,
-    updateReview
+    updateReview,
+    getAllReviewsbyTeacher
 }
