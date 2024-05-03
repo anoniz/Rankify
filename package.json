@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "env-cmd nodemon src/server.js",
-    "once":"env-cmd node src/server.js"
+    "dev-test": "env-cmd nodemon src/db/aivenDb.js",
+    "once": "env-cmd node src/server.js"
   },
   "keywords": [],
   "author": "",
@@ -16,6 +17,7 @@
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "express": "^4.18.3",
+    "express-list-routes": "^1.2.1",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",

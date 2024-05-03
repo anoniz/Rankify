@@ -2,7 +2,7 @@ const { teacherService,subjectRatingService,ratingService } = require('../servic
 const { v4:uuid } = require('uuid');
 const { Teacher, Subject, Subject_Rating,Department,Faculty} = require('../models/index');
 const sequelize = require('sequelize');
-const { json } = require('express');
+
 // CRUD
 
 

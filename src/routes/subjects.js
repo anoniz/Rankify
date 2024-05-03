@@ -6,5 +6,8 @@ const { subjectController } = require('../controllers/index');
 
 router.get('/api/subjects/:id',subjectController.getAllSubjectsByDept);
 
+// routes need to be added
+//
+
 
 module.exports = router; 

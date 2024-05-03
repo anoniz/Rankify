@@ -34,7 +34,7 @@ Subject.belongsTo(Department);
 Department.hasMany(User, {
     onDelete: 'CASCADE',
     foreignKey: {
-        type: DataTypes.STRING,
+        type: DataTypes.UUID,
         allowNull: false
     }
 }); // need to fix this later , give it fk

@@ -76,7 +76,7 @@ const getAllRatingsOfTeacher = async(req,res) => {
     // first we need subject ratings, becuase ratings are linked to subject ratings
     // and not directly to teacher
     try {
-        const teacherId = req.params.id;
+        const teacherId = req.params.teacherId;
         const subject_ratings = await subjectRatingService.getAllSubjectRatingsOfTeacher(teacherId);
 
         if(subject_ratings.error) {

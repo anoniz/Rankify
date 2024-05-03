@@ -6,7 +6,7 @@ const { ratingController } = require('../controllers/index');
 router.post('/api/rating', ratingController.createRating);
 
 // all gets                    // get ratings of a teacher 
-router.get('/api/ratings/:id', ratingController.getAllRatingsOfTeacher);
+router.get('/api/ratings/:teacherId', ratingController.getAllRatingsOfTeacher);
 
 
 

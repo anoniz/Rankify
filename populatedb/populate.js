@@ -3,6 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const { Faculty, Department, Subject,} = require('../src/models/index'); // Import your Sequelize models
 
+
 async function populateDatabase(jsonFilePath,commonSubjectsFilePath) {
     try {
         const jsonData = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'));
@@ -46,12 +47,23 @@ async function populateDatabase(jsonFilePath,commonSubjectsFilePath) {
 
 // populate teachers
 const { Teacher } = require('../src/models/index');
-const jsonFilePath = process.argv[2];
+// const jsonFilePath = process.argv[2];
 async function populateTeachers(jsonFilePath) {
+    try {
+
     const jsonData = JSON.parse(fs.readFileSync(jsonFilePath, 'utf-8'));
 
     for(const teacher of jsonData.teachers) {
-        teacher.FacultyId = "6b10b0aa-b099-4507-8299-79f41e85ba31";
+        teacher.DepartmentId = "f767d174-1e76-4d2d-b112-4a1c91d760d4";
         await Teacher.create(teacher);
     }
+    console.log("teacers populated successfully");
+}   catch(err) {
+    console.log(err)
+} 
 }  
+
+module.exports = {
+    populateDatabase,
+    populateTeachers,
+}
