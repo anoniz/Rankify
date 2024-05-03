@@ -2,10 +2,8 @@ node_modules/
 .env
 test.js
 .vscode
-populatedb
-populatedb/common_subjects.json
+populateDB
 test
-populatedb/data.json
 progress.txt
 other
 test.js
