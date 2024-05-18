@@ -4,7 +4,7 @@ const db = require('../db/sequelize');
 
 const Review = db.define('Review', {
       id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.UUID,
         primaryKey: true,
      },
       review_text : {

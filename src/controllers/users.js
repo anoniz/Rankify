@@ -1,160 +1,180 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.login = exports.getUserById = exports.getAllUsers = exports.createUser = void 0;
-const { userService } = require('../services/index');
-// const bcrypt  = require('bcrypt');
-// const jwt = require('jsonwebtoken');
-const bcrypt = __importStar(require("bcrypt"));
-const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const token_1 = __importDefault(require("../models/token"));
-const emailService_1 = __importDefault(require("../authentications/emailService"));
+const { userService, } = require('../services/index');
+const { createFacultyIfNotExists } = require('./faculty');
+const { createDepartmentIfNotExists } = require('./department');
+
+
+const bcrypt  = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const Token = require('../models/token');
+const generateRandomCode = require('../utils/generateCode');
+
+// import sendVerificationCode from '../authentications/emailService';
+
 const JWT_SECRET = process.env.JWT_SECRET;
-// type UserToken = {
-//     userId:string,
-//     userPassword:string,
-//     token:number
-// }
-const verifyCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+
+const verifyCode  = async (req, res) => {
     try {
-        const userToken = Object.assign({}, req.body.token);
-        const token = yield token_1.default.findByPk(userToken.email);
-        if (!token) {
-            return res.status(404).send({ "message": "token not found" });
-        }
-        // now we have found the token so we can create the user
-        req.body.user = {
-            email: token.dataValues.userId,
-            password: token.dataValues.userPass,
-            name: token.dataValues.userId.split('.')[0].toUpperCase()
-        };
-        // create user;
-        yield createUser(req, res);
-    }
-    catch (err) {
+         const userToken = {
+            userId: req.body.email,
+            token: req.body.token
+         };
+         console.log(userToken);
+
+         const token = await Token.findByPk(userToken.userId);
+         if(!token) {
+             return res.status(404).send({"message":"token not found"});
+         }
+         // now we have found the token so we can make user verified.
+         const updatedUser = await userService.updateUser({isVerified: true},userToken.userId);
+         if(updatedUser.error) {
+            return res.status(500).send({"message": "something went wrong in userController verifyCode", "error": updatedUser})
+         }
+       return res.status(200).send({"message":"success"});
+
+    }  catch(err) {
         console.log(err);
-        return res.status(500).send({ "message": "something went wrong in userController create user" });
+        return res.status(500).send({"message":"something went wrong in userController create user"});
     }
-});
-const sendCode = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+}
+
+const sendCode = async (req, res) => {
     try {
-        const user = Object.assign({}, req.body.user);
-        const resp = yield token_1.default.create(user);
-        const sendToken = yield (0, emailService_1.default)(user.email);
-        if (sendToken.error) {
-            return res.status(500).send({ "message": "something went wrong in userController sendCode" });
-        }
-        return res.status(200).send("Verification Code sent successfully, please check your email address");
-    }
-    catch (err) {
+       const user = {
+         userId: req.body.email,
+         userPass: req.body.password,
+         token: generateRandomCode()
+       };
+    console.log("Token User = ", user);
+       const resp = await Token.create(user);
+    //    const sendToken = await sendVerificationCode(user.email);
+    //    if(sendToken.error) {
+    //        return res.status(500).send({"message":"something went wrong in userController sendCode"});
+    //    }
+       console.log(user);
+       return res.status(200).send("Verification Code sent successfully, please check your email address");
+
+    }  catch(err) {
         console.log(err);
-        return res.status(500).send({ "message": "something went wrong in userController create user" });
+        return res.status(500).send({"message":"something went wrong in userController create user"});
     }
-});
-const createUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+}
+
+const createUser  = async (req,res) => {
     try {
-        const user = Object.assign({}, req.body.user);
-        // lets see if user is already there
-        const dbUser = yield userService.getUser(user.email);
-        if (dbUser.user) {
-            return res.status(403).json({ "message": "user already exits" });
+        const user = {...req.body};
+        console.log(req.body);
+        console.log(user);
+        // lets see if user is already there 
+        const dbUser = await userService.getUser(user.email);
+        if(dbUser.user) {
+            return res.status(403).json({"message":"user already exits"});
         }
+        // user also has department and faculty propriates
+        // so we need to check if those faculties exists in db or not else create them.
+        const getFaculty = await createFacultyIfNotExists(user.faculty);
+        let facultyId;
+        if(getFaculty.faculty) {
+              facultyId = getFaculty.faculty
+        }
+        else {
+             return res.status(500).send({"message":"something went wrong in userController create user"});
+        }
+        // now check for dept
+        const getDepartment = await createDepartmentIfNotExists(user.department,facultyId);
+        let departmentId;
+        if(getDepartment.department) {
+            departmentId = getDepartment.department
+        }
+        else {
+            return res.status(500).send({"message":"something went wrong in userController create user"});
+        }
+        // now we have faculty id and department id to create user
         // encrypt the password before saving in db
-        user.password = yield bcrypt.hash(user.password, 8);
-        const newUser = yield userService.createUser(user);
-        if (newUser.error) {
+        user.password = await bcrypt.hash(user.password,8);
+        user.DepartmentId = departmentId;
+
+        const newUser = await userService.createUser(user);
+        if(newUser.error) {
             return res.status(newUser.error.code).send(newUser.error.message);
         }
-        // create and send token
-        const token = jsonwebtoken_1.default.sign({ user: { email: user.email, name: user.name } }, JWT_SECRET);
-        return res.status(201).json(token);
-    }
-    catch (err) {
+        // send email to user with code..
+         return await sendCode(req,res);
+        
+        // cant send token becuase verification is not completed yet
+        return res.status(201).json({success: true});
+
+        // const token = jwt.sign({user:{email:user.email,name:user.name}},JWT_SECRET!);
+        // return res.status(201).json(token);
+    } catch(err) {
         console.log(err);
-        return res.status(500).send({ "message": "something went wrong in userController create user" });
+        return res.status(500).send({"message":"something went wrong in userController create user"});
     }
-});
-exports.createUser = createUser;
-const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+}
+
+const login = async(req,res) => {
     try {
-        const { email, password } = req.body;
-        const user = yield userService.getUser(email);
-        if (user.error) {
-            return res.status(404).json({ "message": "user doesnt exists" });
+        const {email,password} = req.body;
+        const user = await userService.getUser(email);
+        if(!user || !user.user) {
+           return res.status(404).json({"message":"user doesnt exists"});
+        }
+        // now if user exists then check if he is verified (provided the code)
+        if(user.user.dataValues.isVerified == false) { 
+            
+           return res.status(403).json({"message":"Account is not Verified, please check your email for verification code"});
         }
         // let compare both passwords;
-        const isMatch = yield bcrypt.compare(password, user.user.dataValues.password);
-        if (isMatch) {
-            // create and send token
-            const token = jsonwebtoken_1.default.sign({ user: { email: user.email, name: user.name } }, JWT_SECRET);
-            return res.status(201).json(token);
+        const isMatch = await bcrypt.compare(password,user.user.dataValues.password);
+        if(isMatch || password == user.user.dataValues.password) {
+              // create and send token
+          const token = jwt.sign({
+            user:{
+                email:user.user.dataValues.email,
+                name:user.user.dataValues.name
+            }},JWT_SECRET);
+          console.log(token);
+          return res.status(201).send({"token": token});
         }
-    }
-    catch (err) {
+        // password did not matched
+        return res.status(401).send({"message": "password did not match"});
+    }  catch(err) {
         console.log(err);
-        return res.status(500).send({ "message": "something went wrong in userController login user" });
+        return res.status(500).send({"message":"something went wrong in userController login user"});
     }
-});
-exports.login = login;
-const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+
+}
+
+const getUserById = async(req,res) => {
     try {
-        const user = yield userService.getUser(req.params.email);
-        if (!user) {
-            return res.status(404).send({ "user": user, "message": "user not found" });
-        }
-        if (user.error) {
-            return res.status(user.error.code).send(user.error.message);
-        }
-        return res.send({ "user": user, "message": "user found sucess" });
-    }
-    catch (err) {
+      const user = await userService.getUser(req.params.email);
+      if(!user) {
+        return res.status(404).send({"user":user,"message":"user not found"});
+      }
+      if(user.error) {
+         return res.status(user.error.code).send(user.error.message);
+      }
+      return res.send({"user":user,"message":"user found sucess"});
+    } catch(err) {
         console.log(err);
-        return res.status(500).send({ "message": "something went wrong in UserController findByID" });
+        return res.status(500).send({"message":"something went wrong in UserController findByID"});
     }
-});
-exports.getUserById = getUserById;
-const getAllUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+}
+
+const getAllUsers = async(req,res) => {
     try {
-        const user = yield userService.getAllUsers();
-        return res.status(200).send({ "user": user, "message": "found all" });
-    }
-    catch (err) {
+      const user = await userService.getAllUsers();
+      return res.status(200).send({"user":user,"message":"found all"});
+    } catch(err) {
         console.log(err);
-        return res.status(500).send({ "message": "something went wrong in UserController findAll" });
+        return res.status(500).send({"message":"something went wrong in UserController findAll"});
     }
-});
-exports.getAllUsers = getAllUsers;
+}
+
+
+module.exports = { 
+    createUser,
+    getAllUsers,
+    getUserById,
+    login,
+    verifyCode
+}

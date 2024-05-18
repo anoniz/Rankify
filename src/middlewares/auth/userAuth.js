@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 
 // Middleware function to verify JWT token and extract user
 const authenticateJWT = async(req, res, next) => {
+
   // Check if the request is for the /login route
   if (req.path === '/login') {
     // Get the JWT token from the request headers
@@ -35,16 +36,21 @@ const authenticateJWT = async(req, res, next) => {
       jwt.verify(token, process.env.JWT_SECRET, async(err, user) => {
         if (err) {
           // Token verification failed
+          // console.log(err);
           return res.status(403).json({ error: 'Token verification failed' });
         }
         // Token verification succeeded, user information is extracted from the token
         // lets get all user details from dbm we will need them
-        user = await User.findByPk(user.email);
+
+
+        user = await User.findByPk(user.user.email);
+        
         if(!user) {
             return res.status(403).json({ error: 'Token verification failed' });
         }
         // now req.user contain actual user details, dept , faculty,etc
-        req.user = user;
+
+        req.user = user.dataValues;
         next();
       });
     } else {

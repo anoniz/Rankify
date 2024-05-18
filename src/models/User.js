@@ -27,7 +27,12 @@ const User = db.define('User', {
     password: {
         type: DataTypes.STRING,
         allowNull: false
-    } 
+    } ,
+    isVerified: {
+      type : DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    }
   }, {
     schema: 'user_schema'
 });

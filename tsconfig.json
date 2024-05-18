@@ -8,6 +8,6 @@
     "esModuleInterop": true,
     "incremental": true,
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/controllers/users.js"],
   "exclude": ["node_modules"]
 }

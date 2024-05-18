@@ -11,10 +11,6 @@ class Token extends sequelize_1.Model {
                 type: sequelize_1.DataTypes.STRING,
                 primaryKey: true,
             },
-            userPass: {
-                type: sequelize_1.DataTypes.STRING,
-                allowNull: false,
-            },
             token: {
                 type: sequelize_1.DataTypes.INTEGER,
                 allowNull: false,
@@ -31,4 +27,5 @@ class Token extends sequelize_1.Model {
 // Initialize the Token model with the Sequelize instance
 Token.initialize(sequelize);
 // Export the Token model for usage in other modules
-exports.default = Token;
+//exports.default = Token;
+module.exports = Token;

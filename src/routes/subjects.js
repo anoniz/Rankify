@@ -4,7 +4,7 @@ const { subjectController } = require('../controllers/index');
 
 //all gets
 
-router.get('/api/subjects/:id',subjectController.getAllSubjectsByDept);
+router.get('/api/subjects/department/:id',subjectController.getAllSubjectsByDept);
 
 // routes need to be added
 //

@@ -4,6 +4,9 @@ const { Department } = require('../models/index');
 const getDepartment = async(departmentName) => {
     try {
       const department = await Department.findOne({where:{name:departmentName}});
+      if(!department || !department.dataValues) {
+        throw new Error('Could not find department');
+      }
       return {department:department};
     } catch(err) {
         console.log(err);

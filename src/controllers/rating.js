@@ -18,11 +18,12 @@ const calculateSubjectRating = (rating) => {
     rating.subject_command * Weight_Subject_Command + 
     rating.teaching_method * Weight_Teaching_Method + 
     rating.helping_attitude * Weight_Helping_Attitude +
-    (rating.is_role_model ? 10 * Weight_Is_Role_Model: 0) +
+    (rating.is_role_model ? 9 * Weight_Is_Role_Model: 68) +
     (rating.lab_interaction || 0 ) * Weight_Lab_Interaction) / Total_Weights;
     
     return parseInt(Overall_Rating.toFixed());
 }
+
 
 // punctuality, subject_command , teaching_method , helping_attitude , 
 // lab_interaction, is_role_model, // subject_Rating id, teacher id, userid ,
@@ -37,17 +38,27 @@ const createRating = async(req,res) => {
     // req.body should have rating, user,teacher,subject
     try {
       console.log(req.body);
+      // let format the rating according to our model
+     
+      const reqRating = {
+        punctuality:req.body.puntualityRating,
+        subject_command: req.body.subjectRating,
+        teaching_method: req.body.teachingMethodRating,
+        helping_attitude: req.body.helpingAttitudeRating,
+        lab_interaction: req.body.labworkRating,
+        is_role_model: req.body.isRoleModel,
+      }
     const rating = {
-        ...req.body.rating,   // this will contain above things
-        UserEmail: req.body.user.email,  // req object will contain user after validation,
-        TeacherEmail: req.body.teacher.email
+        ...reqRating,   // this will contain above things
+        UserEmail: req.user.email,  // req object will contain user after validation,
+        TeacherEmail: req.body.TeacherEmail
     } // we also need SubjectRatingId to create review so lets create one.
 
     // create a subjectRating
     let subject_Rating = {
         id:uuid(),
-        TeacherEmail: req.body.teacher.email,
-        SubjectId: req.body.subject.id,
+        TeacherEmail: req.body.TeacherEmail,
+        SubjectId: req.body.SubjectId,
         rating: calculateSubjectRating(rating) 
     };
     const subjectRating = await subjectRatingService.createSubject_Rating(subject_Rating);

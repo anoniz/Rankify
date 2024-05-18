@@ -47,4 +47,5 @@ const Teacher = db.define('Teacher', {
     schema: 'user_schema'
 });
 
+
 module.exports = Teacher;

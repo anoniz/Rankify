@@ -4,7 +4,6 @@ const sequelize = require('../db/sequelize');
 // Define the attributes of the Token model
 interface TokenAttributes {
     userId: string;
-    userPass: string;
     token: number;
 }
 
@@ -14,7 +13,6 @@ interface TokenCreationAttributes extends Optional<TokenAttributes, 'userId'> {}
 // Define the Token model class extending Model and specifying attributes
 class Token extends Model<TokenAttributes, TokenCreationAttributes> implements TokenAttributes {
     public userId!: string;
-    public userPass!: string;
     public token!: number;
 
     // Specify the Sequelize model attributes and configurations
@@ -24,10 +22,6 @@ class Token extends Model<TokenAttributes, TokenCreationAttributes> implements T
                 userId: {
                     type: DataTypes.STRING,
                     primaryKey: true,
-                },
-                userPass: {
-                    type: DataTypes.STRING,
-                    allowNull: false,
                 },
                 token: {
                     type: DataTypes.INTEGER,

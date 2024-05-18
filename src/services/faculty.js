@@ -4,6 +4,9 @@ const { Faculty } = require('../models/index');
 const getFaculty = async(facultyName) => {
     try {
         const faculty = await Faculty.findOne({where:{name:facultyName}});
+        if(!faculty || !faculty.dataValues) {
+          throw new Error('Could not find faculty');
+        }
         return {faculty:faculty};
       } catch(err) {
           console.log(err);
@@ -51,6 +54,8 @@ const updateFaculty = async(updates) => {
   }
 
 }
+
+
 
 module.exports = {
   getFaculty,

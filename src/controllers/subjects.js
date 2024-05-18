@@ -25,7 +25,7 @@ const getAllSubjectsByDept = async(req,res) => {
        if(subjects.error) {
         return res.status(subjects.error.code).json(subjects.error.message);
        }
-       return res.json(subjects);
+       return res.status(200).send(subjects);
     } catch(err) {
         console.log(err);
         return res.status(500).send({"message":"something went wr ong in subjectController create subject"});

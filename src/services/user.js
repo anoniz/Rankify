@@ -33,9 +33,9 @@ const createUser = async(user) => {
  } 
  }
  
- const updateUser = async(updates) => {
+ const updateUser = async(updates,id) => {
    try {
-     const newUser = await User.update(updates,{where:{id:updates.id}});
+     const newUser = await User.update(updates,{where:{email:id}});
      return {updatedUser: newUser[1]}; 
    } catch(err) {
      console.log(err);

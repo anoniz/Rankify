@@ -86,6 +86,7 @@ const getTop10Teachers = async(req,res) => {
 
        const {top_subject_ratings} = await subjectRatingService.getTopSubjectRatings(limit); // get top 10
        const teacherEmails = top_subject_ratings.map(rating => rating.TeacherEmail);
+       const ratings = top_subject_ratings.map(ratings => ratings.dataValues.rating);
        // fetch all teachers
        const top_10_teachers = await Teacher.findAll({
            where: {
@@ -122,10 +123,13 @@ const getTop10Teachers = async(req,res) => {
            teacher.dataValues.department = teacher.dataValues.Department.name;
            delete teacher.dataValues.Department;
        }
+       top_10_teachers.forEach((teacher, index) => {
+         teacher.dataValues.rating = ratings[index];
+       })
+
        const topTeachers = [];
        topTeachers.push({teachers: top_10_teachers});
        topTeachers.push({subjects: subjects});
-       console.log(JSON.parse(JSON.stringify(topTeachers[0].teachers)));
        // return top teachers
        return res.json(topTeachers);
         
